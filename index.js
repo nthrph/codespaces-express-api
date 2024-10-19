@@ -75,34 +75,55 @@ app.post('/api/addproduct' , (req,res)=>{
   });
 })
 
-app.delete('/api/delproduct/:id' , (req,res)=>{
-  const id =req.params.id;
-  con.query(`DELETE FROM * FROM products_6430300498 where id=${id}`, function (err, result, fields) {
-    if (err) throw err.status(400).send("Error, cannot delete product");
-    con.query("SELECT * FROM products_6430300498" , function (err,result,fields){
-      if(err) throw res.status(400).send("No products found");
-      console.log(result)
-      res.send({products:result,status:"ok"})
-    })
+// app.delete('/api/delproduct/:id' , (req,res)=>{
+//   const id =req.params.id;
+//   con.query(`DELETE FROM * FROM products_6430300498 where id=${id}`, function (err, result, fields) {
+//     if (err) throw err.status(400).send("Error, cannot delete product");
+//     con.query("SELECT * FROM products_6430300498" , function (err,result,fields){
+//       if(err) throw res.status(400).send("No products found");
+//       console.log(result)
+//       res.send({products:result,status:"ok"})
+//     })
+//   });
+// })
+app.delete('/api/delproduct/:id', (req, res) => {
+  const id = req.params.id;
+  con.query('DELETE FROM products_6430300498 WHERE id = ?', [id], function (err, result) {
+    if (err) return res.status(400).send("Error, cannot delete product");
+    con.query('SELECT * FROM products_6430300498', function (err, result) {
+      if (err) return res.status(400).send("No products found");
+      res.send({ products: result, status: "ok" });
+    });
   });
-})
+});
 
-app.post('/api/updateproduct' , (req,res)=>{
-  const id =req.params.id;
-  const name = req.body.name;
-  const price = req.body.price;
-  const img = req.body.img;
-  console.log( name,price,img);
-  con.query(`UPDATE products_6430300498 SET name='${name}', price='${price}' , img='${img}' WHERE id = ${id})`, function (err, result, fields) {
-    if (err) throw err;
-    if (result.length == 0)
-      res.status(400).send(`No products id: ${id} found`);
-    else {
-      console.log(result);
-      res.send({products:result,status:"ok"});
-    }
+
+// app.put('/api/updateproduct/:id' , (req,res)=>{
+//   const id =req.params.id;
+//   const name = req.body.name;
+//   const price = req.body.price;
+//   const img = req.body.img;
+//   console.log( name,price,img);
+//   con.query(`UPDATE products_6430300498 SET name='${name}', price='${price}' , img='${img}' WHERE id = ${id})`, function (err, result, fields) {
+//     if (err) throw err;
+//     if (result.length == 0)
+//       res.status(400).send(`No products id: ${id} found`);
+//     else {
+//       console.log(result);
+//       res.send({products:result,status:"ok"});
+//     }
+//   });
+// })
+
+app.put('/api/updateproduct/:id', (req, res) => {
+  const id = req.params.id;
+  const { name, price, img } = req.body;
+  con.query('UPDATE products_6430300498 SET name = ?, price = ?, img = ? WHERE id = ?', [name, price, img, id], function (err, result) {
+    if (err) return res.status(500).send("Error updating product");
+    if (result.affectedRows == 0) return res.status(400).send(`No product with id: ${id} found`);
+    res.send({ status: "ok" });
   });
-})
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
